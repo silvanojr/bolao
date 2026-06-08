@@ -1,0 +1,8 @@
+/vendor/
+/storage/*.sqlite
+/storage/*.sqlite-wal
+/storage/*.sqlite-shm
+/storage/logs/*.log
+/config/config.local.php
+.DS_Store
+*.log

@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Encaminha tudo que não for arquivo/pasta real para o front controller
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# Defesa em profundidade: bloqueia arquivos sensíveis caso fiquem visíveis
+<FilesMatch "\.(sqlite|sqlite-wal|sqlite-shm|sql|log|env)$">
+    Require all denied
+</FilesMatch>
