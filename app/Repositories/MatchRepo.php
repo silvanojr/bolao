@@ -92,4 +92,57 @@ final class MatchRepo
         $st = (int) $m['status'];
         return $st !== self::ST_SCHEDULED && $st !== self::ST_LIVE;
     }
+
+    /** Lista de seleções (fase de grupos) para os palpites de bônus. */
+    public static function teams(): array
+    {
+        return Db::all(
+            "SELECT home_country AS country, home_team AS name FROM matches
+              WHERE grp IS NOT NULL AND home_team IS NOT NULL AND home_country IS NOT NULL
+              UNION
+             SELECT away_country AS country, away_team AS name FROM matches
+              WHERE grp IS NOT NULL AND away_team IS NOT NULL AND away_country IS NOT NULL
+              ORDER BY name COLLATE NOCASE"
+        );
+    }
+
+    /** Primeiro kickoff do torneio (deadline dos palpites de bônus). */
+    public static function firstKickoff(): ?string
+    {
+        $r = Db::one('SELECT MIN(utc_kickoff) AS k FROM matches');
+        return ($r && !empty($r['k'])) ? (string) $r['k'] : null;
+    }
+
+    /** Os palpites de bônus já travaram? (Copa começou) */
+    public static function bonusLocked(): bool
+    {
+        $k = self::firstKickoff();
+        return $k !== null && Time::isPast($k);
+    }
+
+    /** Primeiro jogo de uma etapa (ex.: 'Final', 'Play-off for third place'). */
+    public static function getByStage(string $stage): ?array
+    {
+        return Db::one('SELECT * FROM matches WHERE stage = ? ORDER BY utc_kickoff LIMIT 1', [$stage]);
+    }
+
+    /** Lado vencedor de fato, incluindo pênaltis. Retorna 'HOME'|'AWAY'|null. */
+    public static function actualWinnerSide(array $m): ?string
+    {
+        if ($m['home_goals'] === null || $m['away_goals'] === null) {
+            return null;
+        }
+        $hp = $m['home_pens'];
+        $ap = $m['away_pens'];
+        if ($hp !== null && $ap !== null && (int) $hp !== (int) $ap) {
+            return (int) $hp > (int) $ap ? 'HOME' : 'AWAY';
+        }
+        if ((int) $m['home_goals'] > (int) $m['away_goals']) {
+            return 'HOME';
+        }
+        if ((int) $m['away_goals'] > (int) $m['home_goals']) {
+            return 'AWAY';
+        }
+        return null;
+    }
 }

@@ -69,3 +69,35 @@ CREATE TABLE IF NOT EXISTS settings (
     key   TEXT PRIMARY KEY,
     value TEXT
 );
+
+-- Ligas: agrupam usuários para ranking. Os palpites continuam globais por usuário.
+CREATE TABLE IF NOT EXISTS leagues (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT    NOT NULL,
+    code        TEXT    NOT NULL,                  -- código compartilhável (e na URL)
+    owner_id    INTEGER NOT NULL REFERENCES users(id),
+    is_default  INTEGER NOT NULL DEFAULT 0,        -- 1 = liga "Geral"
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_leagues_code ON leagues (code);
+
+CREATE TABLE IF NOT EXISTS league_members (
+    league_id INTEGER NOT NULL REFERENCES leagues(id) ON DELETE CASCADE,
+    user_id   INTEGER NOT NULL REFERENCES users(id)   ON DELETE CASCADE,
+    joined_at TEXT    NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (league_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_league_members_user ON league_members (user_id);
+
+-- Palpites de bônus do torneio (campeão/vice/3º). Travam no início da Copa.
+CREATE TABLE IF NOT EXISTS bonus_picks (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    kind       TEXT    NOT NULL,                   -- champion | runner_up | third
+    country    TEXT    NOT NULL,                   -- IdCountry (ex.: BRA)
+    team_name  TEXT    NOT NULL,
+    points     INTEGER,                            -- NULL até ser decidido
+    created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_bonus_user_kind ON bonus_picks (user_id, kind);

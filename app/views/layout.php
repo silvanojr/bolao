@@ -19,10 +19,15 @@ $flashes = \App\Flash::pull();
     <nav class="container">
         <a href="<?= e(base_url('/')) ?>" class="brand">⚽ Bolão&nbsp;2026</a>
         <?php if ($u): ?>
-            <form method="post" action="<?= e(base_url('/logout')) ?>" class="logout-form">
-                <?= \App\Csrf::field() ?>
-                <button type="submit" class="link-btn">Sair</button>
-            </form>
+            <div class="header-right">
+                <?php if ((int) $u['is_admin'] === 1): ?>
+                    <a href="<?= e(base_url('/admin/config')) ?>" class="header-gear" aria-label="Admin">⚙️</a>
+                <?php endif; ?>
+                <form method="post" action="<?= e(base_url('/logout')) ?>" class="logout-form">
+                    <?= \App\Csrf::field() ?>
+                    <button type="submit" class="link-btn">Sair</button>
+                </form>
+            </div>
         <?php endif; ?>
     </nav>
 </header>
@@ -37,11 +42,10 @@ $flashes = \App\Flash::pull();
 <?php if ($u): ?>
 <nav class="tabbar">
     <a href="<?= e(base_url('/jogos')) ?>"><span>🗓️</span>Jogos</a>
+    <a href="<?= e(base_url('/campeao')) ?>"><span>⭐</span>Campeão</a>
     <a href="<?= e(base_url('/ranking')) ?>"><span>🏆</span>Ranking</a>
+    <a href="<?= e(base_url('/ligas')) ?>"><span>👥</span>Ligas</a>
     <a href="<?= e(base_url('/minhas-apostas')) ?>"><span>🎯</span>Minhas</a>
-    <?php if ((int) $u['is_admin'] === 1): ?>
-        <a href="<?= e(base_url('/admin/config')) ?>"><span>⚙️</span>Admin</a>
-    <?php endif; ?>
 </nav>
 <?php endif; ?>
 

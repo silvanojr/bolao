@@ -5,29 +5,40 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Auth;
-use App\Db;
 use App\View;
+use App\Repositories\LeagueRepo;
 
 final class RankingController
 {
     public function index(): void
     {
         Auth::requireAuth();
-        $rows = Db::all(
-            'SELECT u.id, u.name,
-                    COALESCE(SUM(p.points),0)   AS total,
-                    COALESCE(SUM(p.is_exact),0) AS exacts,
-                    COALESCE(SUM(p.is_three),0) AS threes,
-                    COUNT(p.id)                 AS palpites
-               FROM users u
-               LEFT JOIN predictions p ON p.user_id = u.id
-              GROUP BY u.id
-              ORDER BY total DESC, exacts DESC, threes DESC, u.name COLLATE NOCASE'
-        );
+        $uid = (int) Auth::id();
+        $leagues = LeagueRepo::forUser($uid);
+
+        // liga selecionada via ?liga=code (precisa ser uma do usuário)
+        $code = (string) ($_GET['liga'] ?? '');
+        $selected = null;
+        if ($code !== '') {
+            foreach ($leagues as $l) {
+                if ($l['code'] === $code) {
+                    $selected = $l;
+                    break;
+                }
+            }
+        }
+        if ($selected === null) {
+            $selected = $leagues[0] ?? null;
+        }
+
+        $rows = $selected !== null ? LeagueRepo::leaderboard((int) $selected['id']) : [];
+
         View::render('ranking/index', [
-            'title' => 'Ranking',
-            'rows'  => $rows,
-            'meId'  => (int) Auth::id(),
+            'title'    => 'Ranking',
+            'rows'     => $rows,
+            'meId'     => $uid,
+            'leagues'  => $leagues,
+            'selected' => $selected,
         ]);
     }
 }

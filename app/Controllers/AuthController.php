@@ -9,10 +9,23 @@ use App\Csrf;
 use App\Flash;
 use App\View;
 use App\Repositories\InviteRepo;
+use App\Repositories\LeagueRepo;
 use App\Repositories\UserRepo;
 
 final class AuthController
 {
+    /** Se o usuário veio de um link de liga, entra nela após autenticar. */
+    private function consumePendingLeague(): ?string
+    {
+        $code = $_SESSION['pending_league'] ?? null;
+        if (!$code) {
+            return null;
+        }
+        unset($_SESSION['pending_league']);
+        $l = LeagueRepo::joinByCode((int) Auth::id(), (string) $code);
+        return $l !== null ? (string) $l['code'] : null;
+    }
+
     public function showLogin(): void
     {
         Auth::requireGuest();
@@ -27,8 +40,9 @@ final class AuthController
         $pass  = (string) ($_POST['password'] ?? '');
 
         if (Auth::attempt($email, $pass)) {
+            $lc = $this->consumePendingLeague();
             Flash::success('Bem-vindo de volta! 👋');
-            redirect('/ranking');
+            redirect($lc !== null ? '/ranking?liga=' . $lc : '/ranking');
         }
         Flash::error('E-mail ou senha incorretos.');
         redirect('/login');
@@ -93,6 +107,8 @@ final class AuthController
         $id = UserRepo::create($name, $email, password_hash($pass, PASSWORD_DEFAULT), false);
         InviteRepo::consume((int) $inv['id']);
         Auth::login($id);
+        LeagueRepo::ensureDefault($id);              // entra na liga Geral
+        $this->consumePendingLeague();               // e em alguma liga vinda por link
         Flash::success('Conta criada! Bora palpitar 🎯');
         redirect('/jogos');
     }

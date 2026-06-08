@@ -69,19 +69,23 @@ final class AdminController
         Auth::requireAdmin();
         Csrf::verify();
 
-        $before = SettingRepo::scoring();
-        $map = [
-            'points_exact'  => 'exact',
-            'points_diff'   => 'diff',
-            'points_winner' => 'winner',
-            'points_miss'   => 'miss',
+        $keys = [
+            'points_exact', 'points_diff', 'points_winner', 'points_miss',
+            'bonus_champion', 'bonus_runner_up', 'bonus_third',
         ];
-        foreach ($map as $key => $_) {
-            if (isset($_POST[$key]) && is_numeric($_POST[$key])) {
-                SettingRepo::set($key, (string) (int) $_POST[$key]);
+        $before = [];
+        foreach ($keys as $k) {
+            $before[$k] = SettingRepo::get($k);
+        }
+        foreach ($keys as $k) {
+            if (isset($_POST[$k]) && is_numeric($_POST[$k])) {
+                SettingRepo::set($k, (string) (int) $_POST[$k]);
             }
         }
-        $after = SettingRepo::scoring();
+        $after = [];
+        foreach ($keys as $k) {
+            $after[$k] = SettingRepo::get($k);
+        }
 
         if ($before !== $after) {
             Scoring::recomputeAll();

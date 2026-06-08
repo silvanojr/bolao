@@ -67,11 +67,63 @@ final class Scoring
         }
     }
 
-    /** Recalcula TODOS os jogos (usado quando a config de pontos muda). */
+    /** Recalcula TODOS os jogos + bônus (usado quando a config de pontos muda). */
     public static function recomputeAll(): void
     {
         foreach (Db::all('SELECT id FROM matches') as $row) {
             self::recomputeMatch((int) $row['id']);
+        }
+        self::recomputeBonus();
+    }
+
+    /**
+     * Recalcula os palpites de bônus (campeão/vice/3º) a partir do resultado
+     * da final e da disputa de 3º lugar. Idempotente.
+     */
+    public static function recomputeBonus(): void
+    {
+        $cfg = SettingRepo::all();
+        $pts = [
+            'champion'  => (int) ($cfg['bonus_champion']  ?? 20),
+            'runner_up' => (int) ($cfg['bonus_runner_up'] ?? 10),
+            'third'     => (int) ($cfg['bonus_third']     ?? 7),
+        ];
+
+        $resolved = ['champion' => null, 'runner_up' => null, 'third' => null];
+
+        $final = MatchRepo::getByStage('Final');
+        if ($final !== null && MatchRepo::isFinished($final)) {
+            $side = MatchRepo::actualWinnerSide($final);
+            if ($side !== null) {
+                $resolved['champion']  = $side === 'HOME' ? $final['home_country'] : $final['away_country'];
+                $resolved['runner_up'] = $side === 'HOME' ? $final['away_country'] : $final['home_country'];
+            }
+        }
+
+        $third = MatchRepo::getByStage('Play-off for third place');
+        if ($third !== null && MatchRepo::isFinished($third)) {
+            $side = MatchRepo::actualWinnerSide($third);
+            if ($side !== null) {
+                $resolved['third'] = $side === 'HOME' ? $third['home_country'] : $third['away_country'];
+            }
+        }
+
+        $pdo = Db::conn();
+        $pdo->beginTransaction();
+        try {
+            foreach (Db::all('SELECT * FROM bonus_picks') as $p) {
+                $target = $resolved[$p['kind']] ?? null;
+                if ($target === null) {
+                    Db::run("UPDATE bonus_picks SET points = NULL, updated_at = datetime('now') WHERE id = ?", [$p['id']]);
+                } else {
+                    $val = ((string) $p['country'] === (string) $target) ? $pts[$p['kind']] : 0;
+                    Db::run("UPDATE bonus_picks SET points = ?, updated_at = datetime('now') WHERE id = ?", [$val, $p['id']]);
+                }
+            }
+            $pdo->commit();
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
         }
     }
 }

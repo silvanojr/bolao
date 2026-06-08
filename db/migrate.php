@@ -57,6 +57,9 @@ $defaults = [
     'points_diff'       => '3',
     'points_winner'     => '1',
     'points_miss'       => '0',
+    'bonus_champion'    => '20',
+    'bonus_runner_up'   => '10',
+    'bonus_third'       => '7',
     'fifa_competition'  => (string) config('fifa')['competition'],
     'fifa_season'       => (string) config('fifa')['season'],
     'last_sync_at'      => '',
@@ -99,6 +102,27 @@ if ($email !== '' && $pass !== '') {
     }
 } else {
     echo "ℹ Nenhum admin criado (informe --admin-email e --admin-pass para criar).\n";
+}
+
+// --- liga padrão "Geral" + backfill de membros ---
+$firstUser = Db::one('SELECT id FROM users ORDER BY id LIMIT 1');
+if ($firstUser !== null) {
+    $default = Db::one('SELECT id FROM leagues WHERE is_default = 1');
+    if ($default === null) {
+        Db::run(
+            "INSERT INTO leagues (name, code, owner_id, is_default) VALUES ('Geral', 'geral', ?, 1)",
+            [$firstUser['id']]
+        );
+        echo "✓ Liga padrão \"Geral\" criada.\n";
+        $default = Db::one('SELECT id FROM leagues WHERE is_default = 1');
+    }
+    // Garante que todos os usuários estão na liga Geral
+    Db::run(
+        'INSERT OR IGNORE INTO league_members (league_id, user_id)
+         SELECT ?, id FROM users',
+        [$default['id']]
+    );
+    echo "✓ Todos os usuários no(a) liga Geral.\n";
 }
 
 echo "Pronto. Banco em: " . config('db_path') . "\n";

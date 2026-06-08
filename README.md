@@ -7,7 +7,9 @@ Mobile-first, em **PHP 8 + SQLite**, sem framework e sem build step.
 - 🔐 Cadastro só por **link de convite** (sem e-mail/SMTP).
 - 🗓️ Todos os **104 jogos** carregados da **API oficial da FIFA**.
 - 🎯 Palpites **travam no apito inicial** (horário de Brasília); mata-mata libera quando os times são definidos.
-- 🏆 Ranking automático com desempates.
+- ⭐ **Palpite de campeão**: campeão, vice e 3º lugar (pontos extras, travam no início da Copa).
+- 👥 **Ligas separadas**: liga "Geral" automática + ligas próprias com link de convite. Os palpites valem em todas as ligas.
+- 🏆 Ranking por liga, automático, com desempates.
 - 🤖 **Cron** atualiza placares e recalcula a pontuação sozinho.
 
 ## Pontuação (padrão, configurável no Admin)
@@ -22,6 +24,19 @@ Mobile-first, em **PHP 8 + SQLite**, sem framework e sem build step.
 > Empate com placar errado (ex.: palpitou 2×2, deu 1×1) conta como **"acertou o resultado" = 1 ponto**
 > (convenção comum: o saldo de empate é sempre 0). Para pontuar o placar, usa-se o resultado do
 > **tempo normal**; pênaltis só decidem o classificado, não entram no palpite.
+
+**Bônus de torneio** (padrão, configurável): campeão **+20**, vice **+10**, 3º lugar **+7**.
+Travam no 1º jogo da Copa e são pontuados pela final e pela disputa de 3º lugar (o campeão/3º
+considera quem avançou, inclusive em pênaltis). Somam ao total no ranking.
+
+## Ligas
+
+Os **palpites são únicos por pessoa** (você palpita cada jogo uma vez) — a *liga* é só um
+agrupamento de ranking, então dá para participar de várias ao mesmo tempo.
+
+- Todos entram automaticamente na liga **"Geral"** (o ranking geral).
+- Qualquer participante pode **criar uma liga** em *Ligas* e compartilhar o **link** (ou código).
+- Abrir um link de liga (`/liga/{código}`) entra direto; quem não tem conta cria na hora e já entra.
 
 ## Requisitos
 

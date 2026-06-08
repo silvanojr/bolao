@@ -53,6 +53,9 @@ final class SyncService
             }
         }
 
+        // Bônus (campeão/vice/3º) depende da final e da disputa de 3º; barato, roda sempre.
+        Scoring::recomputeBonus();
+
         $total = count($rows);
         $changed = count($changedFifaIds);
         $res = self::record('ok', "{$total} jogos sincronizados, {$changed} com placar atualizado");

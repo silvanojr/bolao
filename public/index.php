@@ -17,6 +17,8 @@ use App\Router;
 use App\Session;
 use App\Controllers\AdminController;
 use App\Controllers\AuthController;
+use App\Controllers\BonusController;
+use App\Controllers\LeagueController;
 use App\Controllers\MatchController;
 use App\Controllers\PredictionController;
 use App\Controllers\RankingController;
@@ -41,6 +43,17 @@ $r->map('POST', '/jogos/{id}/palpite',   [MatchController::class, 'submit']);
 // Ranking / minhas apostas
 $r->map('GET',  '/ranking',         [RankingController::class, 'index']);
 $r->map('GET',  '/minhas-apostas',  [PredictionController::class, 'mine']);
+
+// Palpites de bônus (campeão / vice / 3º)
+$r->map('GET',  '/campeao',         [BonusController::class, 'index']);
+$r->map('POST', '/campeao',         [BonusController::class, 'save']);
+
+// Ligas
+$r->map('GET',  '/ligas',              [LeagueController::class, 'index']);
+$r->map('POST', '/ligas',              [LeagueController::class, 'create']);
+$r->map('POST', '/ligas/entrar',       [LeagueController::class, 'joinByForm']);
+$r->map('POST', '/ligas/{id}/sair',    [LeagueController::class, 'leave']);
+$r->map('GET',  '/liga/{code}',        [LeagueController::class, 'join']);
 
 // Admin
 $r->map('GET',  '/admin/convites',              [AdminController::class, 'invites']);

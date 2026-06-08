@@ -35,6 +35,8 @@ body {
     font-size: 1.1rem;
     text-decoration: none;
 }
+.header-right { display: flex; align-items: center; gap: .7rem; }
+.header-gear { color: #fff; font-size: 1.25rem; text-decoration: none; line-height: 1; }
 .logout-form { margin: 0; }
 .link-btn {
     background: transparent;
@@ -61,15 +63,29 @@ body {
 .tabbar a {
     flex: 1;
     text-align: center;
-    padding: .55rem 0 .5rem;
-    font-size: .72rem;
+    padding: .5rem 0 .45rem;
+    font-size: .68rem;
     color: #555;
     text-decoration: none;
     display: flex;
     flex-direction: column;
     gap: .15rem;
 }
-.tabbar a span { font-size: 1.25rem; line-height: 1; }
+.tabbar a span { font-size: 1.2rem; line-height: 1; }
+
+/* ---------- Ligas / seletor ---------- */
+.league-chips { display: flex; gap: .4rem; flex-wrap: wrap; margin: .2rem 0 1rem; }
+.league-chips a {
+    font-size: .82rem; padding: .3rem .8rem; border-radius: 999px;
+    text-decoration: none; border: 1px solid #d4d4d4; color: #555; background: #fff;
+}
+.league-chips a.active { background: var(--bolao-green); color: #fff; border-color: var(--bolao-green); }
+
+/* ---------- Bônus / campeão ---------- */
+.bonus-grid label { font-weight: 600; }
+.bonus-pick { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .5rem 0; border-bottom: 1px solid #eee; }
+.bonus-flag { width: 26px; height: 18px; object-fit: cover; border-radius: 2px; vertical-align: middle; margin-right: .4rem; }
+.deadline-note { font-size: .82rem; color: #b78103; }
 .tabbar a:hover { color: var(--bolao-green); }
 
 /* ---------- Flash ---------- */

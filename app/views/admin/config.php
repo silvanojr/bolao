@@ -40,6 +40,18 @@ $syncStatus = $settings['last_sync_status'] ?? '';
                 <input type="number" name="points_miss" value="<?= (int) ($settings['points_miss'] ?? 0) ?>" min="0">
             </label>
         </div>
+        <h4 style="margin-bottom:.3rem">Bônus de torneio</h4>
+        <div class="grid">
+            <label>Campeão
+                <input type="number" name="bonus_champion" value="<?= (int) ($settings['bonus_champion'] ?? 20) ?>" min="0">
+            </label>
+            <label>Vice
+                <input type="number" name="bonus_runner_up" value="<?= (int) ($settings['bonus_runner_up'] ?? 10) ?>" min="0">
+            </label>
+            <label>3º lugar
+                <input type="number" name="bonus_third" value="<?= (int) ($settings['bonus_third'] ?? 7) ?>" min="0">
+            </label>
+        </div>
         <button type="submit">Salvar pontuação</button>
         <small class="rank-sub">Mudar os valores recalcula o ranking inteiro.</small>
     </form>
