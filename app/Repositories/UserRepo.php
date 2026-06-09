@@ -18,6 +18,16 @@ final class UserRepo
         return Db::one('SELECT * FROM users WHERE id = ?', [$id]);
     }
 
+    public static function updateName(int $id, string $name): void
+    {
+        Db::run('UPDATE users SET name = ? WHERE id = ?', [$name, $id]);
+    }
+
+    public static function updatePassword(int $id, string $hash): void
+    {
+        Db::run('UPDATE users SET password_hash = ? WHERE id = ?', [$hash, $id]);
+    }
+
     public static function create(string $name, string $email, string $hash, bool $isAdmin = false): int
     {
         Db::run(

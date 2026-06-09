@@ -20,6 +20,7 @@ $flashes = \App\Flash::pull();
         <a href="<?= e(base_url('/')) ?>" class="brand">⚽ Bolão&nbsp;2026</a>
         <?php if ($u): ?>
             <div class="header-right">
+                <a href="<?= e(base_url('/perfil')) ?>" class="header-gear" aria-label="Meu perfil">👤</a>
                 <?php if ((int) $u['is_admin'] === 1): ?>
                     <a href="<?= e(base_url('/admin/config')) ?>" class="header-gear" aria-label="Admin">⚙️</a>
                 <?php endif; ?>

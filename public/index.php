@@ -21,6 +21,7 @@ use App\Controllers\BonusController;
 use App\Controllers\LeagueController;
 use App\Controllers\MatchController;
 use App\Controllers\PredictionController;
+use App\Controllers\ProfileController;
 use App\Controllers\RankingController;
 
 Session::start();
@@ -43,6 +44,11 @@ $r->map('POST', '/jogos/{id}/palpite',   [MatchController::class, 'submit']);
 // Ranking / minhas apostas
 $r->map('GET',  '/ranking',         [RankingController::class, 'index']);
 $r->map('GET',  '/minhas-apostas',  [PredictionController::class, 'mine']);
+
+// Perfil do usuário
+$r->map('GET',  '/perfil',          [ProfileController::class, 'show']);
+$r->map('POST', '/perfil/nome',     [ProfileController::class, 'updateName']);
+$r->map('POST', '/perfil/senha',    [ProfileController::class, 'updatePassword']);
 
 // Palpites de bônus (campeão / vice / 3º)
 $r->map('GET',  '/campeao',         [BonusController::class, 'index']);
