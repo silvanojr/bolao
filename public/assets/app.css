@@ -125,7 +125,34 @@ body {
     padding: .7rem .8rem;
     margin: .7rem 0;
     background: #fff;
+    transition: box-shadow .3s, border-color .3s;
 }
+/* destaque rápido quando o palpite é salvo no blur */
+.match.saved-flash {
+    border-color: var(--bolao-green);
+    box-shadow: 0 0 0 2px rgba(10, 107, 59, .25);
+}
+
+/* aviso flutuante de autosave */
+.autosave-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 5.5rem; /* acima da tabbar fixa */
+    transform: translate(-50%, 1rem);
+    background: var(--bolao-green);
+    color: #fff;
+    padding: .55rem 1.1rem;
+    border-radius: 999px;
+    font-size: .9rem;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .22);
+    opacity: 0;
+    transition: opacity .25s, transform .25s;
+    z-index: 50;
+    pointer-events: none;
+}
+.autosave-toast.show { opacity: 1; transform: translate(-50%, 0); }
+.autosave-toast.is-err { background: var(--bad); }
 .match-meta {
     display: flex;
     justify-content: space-between;

@@ -47,3 +47,70 @@
     var target = document.querySelector('[data-scroll-target]');
     if (target) target.scrollIntoView({ block: 'start' });
 })();
+
+// Salva o palpite automaticamente ao sair do campo (blur), para que ninguém
+// perca placares por não clicar em "Salvar/Atualizar" em cada jogo.
+(function () {
+    'use strict';
+
+    var toastEl = null, toastTimer = null;
+    function toast(msg, isErr) {
+        if (!toastEl) {
+            toastEl = document.createElement('div');
+            toastEl.className = 'autosave-toast';
+            toastEl.setAttribute('role', 'status');
+            document.body.appendChild(toastEl);
+        }
+        toastEl.textContent = msg;
+        toastEl.classList.toggle('is-err', !!isErr);
+        void toastEl.offsetWidth; // reinicia a transição
+        toastEl.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2000);
+    }
+
+    document.querySelectorAll('.match form').forEach(function (form) {
+        var home = form.querySelector('[name="pred_home"]');
+        var away = form.querySelector('[name="pred_away"]');
+        var btn  = form.querySelector('button[type="submit"]');
+        if (!home || !away) return;
+
+        var saved = home.value + '×' + away.value; // snapshot do que está salvo
+
+        function trySave() {
+            if (home.disabled || away.disabled) return;          // jogo fechado
+            if (home.value === '' || away.value === '') return;   // precisa dos dois
+            var current = home.value + '×' + away.value;
+            if (current === saved) return;                        // nada mudou
+            saved = current;                                      // evita reenvio em rajada
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: new FormData(form),
+                credentials: 'same-origin'
+            }).then(function (r) {
+                return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+            }).then(function (res) {
+                if (res.ok && res.data && res.data.ok) {
+                    if (btn) btn.textContent = 'Atualizar';
+                    var card = form.closest('.match');
+                    if (card) {
+                        card.classList.add('saved-flash');
+                        setTimeout(function () { card.classList.remove('saved-flash'); }, 1200);
+                    }
+                    toast('Palpite salvo ✓', false);
+                } else {
+                    saved = null;                                 // permite tentar de novo
+                    toast((res.data && res.data.error) || 'Não foi possível salvar.', true);
+                }
+            }).catch(function () {
+                saved = null;
+                toast('Sem conexão — palpite não salvo.', true);
+            });
+        }
+
+        home.addEventListener('blur', trySave);
+        away.addEventListener('blur', trySave);
+    });
+})();

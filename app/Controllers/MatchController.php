@@ -30,32 +30,59 @@ final class MatchController
         Auth::requireAuth();
         Csrf::verify();
 
+        $ajax    = self::wantsJson();
         $matchId = (int) $id;
         $m = MatchRepo::find($matchId);
         if ($m === null) {
-            Flash::error('Jogo não encontrado.');
-            redirect('/jogos');
+            self::reject($ajax, 'Jogo não encontrado.', 404, '/jogos');
         }
         if (!MatchRepo::isPredictable($m)) {
-            Flash::error('Os palpites para este jogo estão fechados.');
-            redirect('/jogos');
+            self::reject($ajax, 'Os palpites para este jogo estão fechados.', 403, '/jogos');
         }
 
         $ph = $_POST['pred_home'] ?? null;
         $pa = $_POST['pred_away'] ?? null;
         if (!is_numeric($ph) || !is_numeric($pa)) {
-            Flash::error('Informe o placar dos dois times.');
-            redirect('/jogos#m' . $matchId);
+            self::reject($ajax, 'Informe o placar dos dois times.', 422, '/jogos#m' . $matchId);
         }
         $ph = (int) $ph;
         $pa = (int) $pa;
         if ($ph < 0 || $pa < 0 || $ph > 30 || $pa > 30) {
-            Flash::error('Placar inválido (use de 0 a 30).');
-            redirect('/jogos#m' . $matchId);
+            self::reject($ajax, 'Placar inválido (use de 0 a 30).', 422, '/jogos#m' . $matchId);
         }
 
         PredictionRepo::upsert((int) Auth::id(), $matchId, $ph, $pa);
+
+        if ($ajax) {
+            self::json(['ok' => true, 'pred_home' => $ph, 'pred_away' => $pa]);
+        }
         Flash::success('Palpite salvo! ⚽');
         redirect('/jogos#m' . $matchId);
+    }
+
+    /** A requisição veio do autosave (fetch) e espera JSON? */
+    private static function wantsJson(): bool
+    {
+        return strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest';
+    }
+
+    /** Responde JSON (autosave) ou redireciona com flash (formulário normal). */
+    private static function reject(bool $ajax, string $msg, int $status, string $path): never
+    {
+        if ($ajax) {
+            self::json(['ok' => false, 'error' => $msg], $status);
+        }
+        Flash::error($msg);
+        redirect($path);
+    }
+
+    private static function json(array $data, int $status = 200): never
+    {
+        if (!headers_sent()) {
+            http_response_code($status);
+            header('Content-Type: application/json; charset=utf-8');
+        }
+        echo json_encode($data);
+        exit;
     }
 }
