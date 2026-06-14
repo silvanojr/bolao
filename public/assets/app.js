@@ -38,3 +38,12 @@
     tick();
     setInterval(tick, 30000);
 })();
+
+// Ao abrir /jogos, rola até os jogos de hoje (ou o próximo dia com jogos).
+// Não interfere quando há âncora #m... na URL (volta de um palpite salvo).
+(function () {
+    'use strict';
+    if (window.location.hash) return;
+    var target = document.querySelector('[data-scroll-target]');
+    if (target) target.scrollIntoView({ block: 'start' });
+})();

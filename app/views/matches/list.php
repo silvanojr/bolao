@@ -5,6 +5,20 @@ use App\Time;
 /** @var array $matches */
 /** @var array $preds */
 $curDay = null;
+
+// Dia-alvo do scroll automático: os jogos de hoje ou, na falta, o próximo dia
+// com jogos (e, se a Copa já acabou, o último dia disputado).
+$today = Time::todayKey();
+$scrollDay = null;
+foreach ($matches as $sm) {
+    if (Time::dayKey($sm['utc_kickoff']) >= $today) {
+        $scrollDay = Time::dayKey($sm['utc_kickoff']);
+        break;
+    }
+}
+if ($scrollDay === null && $matches) {
+    $scrollDay = Time::dayKey($matches[array_key_last($matches)]['utc_kickoff']);
+}
 ?>
 <hgroup>
     <h2>Jogos</h2>
@@ -20,7 +34,7 @@ $curDay = null;
         if ($dk !== $curDay):
             $curDay = $dk;
             ?>
-            <h3 class="day-head"><?= e(Time::dayLabel($m['utc_kickoff'])) ?></h3>
+            <h3 class="day-head"<?= $dk === $scrollDay ? ' id="today-head" data-scroll-target' : '' ?>><?= e(Time::dayLabel($m['utc_kickoff'])) ?></h3>
         <?php endif; ?>
         <?php
         $pred = $preds[(int) $m['id']] ?? null;

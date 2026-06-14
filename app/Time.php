@@ -55,6 +55,14 @@ final class Time
         return self::local($iso)->format('Y-m-d');
     }
 
+    /** Chave do dia de hoje no fuso de exibição, ex.: "2026-06-14" */
+    public static function todayKey(): string
+    {
+        return self::nowUtc()
+            ->setTimezone(new DateTimeZone((string) config('tz_display', 'America/Sao_Paulo')))
+            ->format('Y-m-d');
+    }
+
     /** Cabeçalho de dia, ex.: "Quarta, 11 de jun" */
     public static function dayLabel(string $iso): string
     {

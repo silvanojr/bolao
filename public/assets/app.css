@@ -107,6 +107,7 @@ body {
 .day-head {
     position: sticky;
     top: 3.1rem;
+    scroll-margin-top: 3.1rem; /* não fica sob o cabeçalho fixo ao rolar até hoje */
     background: var(--pico-background-color, #fff);
     padding: .6rem 0 .3rem;
     margin-top: 1.2rem;
