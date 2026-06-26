@@ -69,13 +69,13 @@ final class MatchRepo
         if (!self::hasTeams($m)) {
             return false;                       // mata-mata ainda indefinido
         }
-        if ((int) $m['status'] !== self::ST_SCHEDULED) {
-            return false;                       // ao vivo / encerrado / adiado
+        if (self::isLive($m) || self::isFinished($m)) {
+            return false;                       // ao vivo / encerrado
         }
         if (Time::isPast((string) $m['utc_kickoff'])) {
-            return false;                       // passou do horário
+            return false;                       // passou do horário (apito inicial)
         }
-        return true;
+        return true;                            // status pré-jogo (1, 12, ...) segue aberto
     }
 
     public static function isLive(array $m): bool
