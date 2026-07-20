@@ -100,7 +100,10 @@ final class Scoring
             }
         }
 
-        $third = MatchRepo::getByStage('Play-off for third place');
+        // A FIFA renomeou a etapa de "Play-off for third place" para "Bronze final"
+        // durante a Copa; aceita os dois nomes.
+        $third = MatchRepo::getByStage('Bronze final')
+            ?? MatchRepo::getByStage('Play-off for third place');
         if ($third !== null && MatchRepo::isFinished($third)) {
             $side = MatchRepo::actualWinnerSide($third);
             if ($side !== null) {
